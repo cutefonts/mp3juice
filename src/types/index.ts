@@ -4,14 +4,18 @@ export interface DownloadItem {
   title: string;
   format: 'mp3' | 'mp4' | 'webm';
   quality: string;
-  status: 'pending' | 'downloading' | 'completed' | 'error';
+  status: 'pending' | 'downloading' | 'completed' | 'error' | 'cancelled';
   progress: number;
   fileSize?: string;
   duration?: string;
   thumbnail?: string;
   createdAt: Date;
-  downloadUrl?: string; // URL for the actual file download
-  filename?: string; // Generated filename
+  downloadUrl?: string;
+  filename?: string;
+  downloadedBytes?: number;
+  totalBytes?: number;
+  speed?: string;
+  error?: string;
 }
 
 export interface SearchResult {
@@ -23,6 +27,8 @@ export interface SearchResult {
   platform: string;
   views?: string;
   author?: string;
+  uploadDate?: string;
+  description?: string;
 }
 
 export interface FormatOption {
@@ -35,4 +41,27 @@ export interface QualityOption {
   value: string;
   label: string;
   fileSize?: string;
+}
+
+export interface DownloadProgress {
+  progress: number;
+  downloadedBytes: number;
+  totalBytes: number;
+  speed: string;
+}
+
+export interface VideoInfo {
+  title: string;
+  duration: string;
+  thumbnail: string;
+  author?: string;
+  views?: string;
+  uploadDate?: string;
+  description?: string;
+  formats: Array<{
+    quality: string;
+    format: string;
+    url: string;
+    fileSize?: string;
+  }>;
 }

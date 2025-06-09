@@ -6,15 +6,14 @@ import SearchSection from './components/SearchSection';
 import Footer from './components/Footer';
 import { useDownloads } from './hooks/useDownloads';
 import { SearchResult } from './types';
-import { generateSampleAudioFile, generateSampleVideoFile, generateSampleWebMFile, getFileExtension, sanitizeFilename } from './utils/fileDownload';
+import { downloadService } from './services/downloadService';
 
 function App() {
   const { downloads, addDownload, updateDownload, removeDownload, clearHistory } = useDownloads();
   const [activeTab, setActiveTab] = useState<'download' | 'search'>('download');
 
-  const simulateDownload = async (url: string, format: string, quality: string, title?: string) => {
+  const handleDownload = async (url: string, format: string, quality: string, title?: string) => {
     const cleanTitle = title || `Downloaded Media - ${format.toUpperCase()}`;
-    const filename = sanitizeFilename(cleanTitle) + getFileExtension(format);
     
     const downloadId = addDownload({
       url,
@@ -25,64 +24,67 @@ function App() {
       progress: 0,
       fileSize: format === 'mp3' ? '5.2 MB' : '25.8 MB',
       duration: '3:45',
-      filename,
+      filename: '',
     });
 
-    // Simulate download progress
-    let progress = 0;
-    const interval = setInterval(async () => {
-      progress += Math.random() * 15;
-      if (progress >= 100) {
-        progress = 100;
-        
-        try {
-          // Generate the actual downloadable file based on format
-          let downloadUrl: string;
-          if (format === 'mp3') {
-            downloadUrl = generateSampleAudioFile(cleanTitle, '3:45');
-          } else if (format === 'webm') {
-            downloadUrl = await generateSampleWebMFile(cleanTitle, '3:45', quality);
-          } else {
-            downloadUrl = await generateSampleVideoFile(cleanTitle, '3:45', quality);
-          }
-          
-          updateDownload(downloadId, { 
-            status: 'completed', 
-            progress: 100,
-            downloadUrl 
-          });
-        } catch (error) {
-          console.error('Error generating file:', error);
-          updateDownload(downloadId, { 
-            status: 'error', 
-            progress: 0 
+    try {
+      updateDownload(downloadId, { status: 'downloading', progress: 0 });
+
+      const { blob, filename } = await downloadService.downloadMedia(
+        url,
+        format,
+        quality,
+        (progress) => {
+          updateDownload(downloadId, {
+            status: 'downloading',
+            progress: progress.progress,
+            downloadedBytes: progress.downloadedBytes,
+            totalBytes: progress.totalBytes,
+            speed: progress.speed,
           });
         }
-        
-        clearInterval(interval);
-      } else {
-        updateDownload(downloadId, { 
-          status: 'downloading', 
-          progress: Math.min(progress, 100) 
-        });
-      }
-    }, 500);
-  };
+      );
 
-  const handleDownload = (url: string, format: string, quality: string) => {
-    simulateDownload(url, format, quality);
+      // Create download URL
+      const downloadUrl = URL.createObjectURL(blob);
+      
+      updateDownload(downloadId, {
+        status: 'completed',
+        progress: 100,
+        downloadUrl,
+        filename,
+      });
+
+    } catch (error) {
+      console.error('Download failed:', error);
+      updateDownload(downloadId, {
+        status: 'error',
+        progress: 0,
+        error: error instanceof Error ? error.message : 'Download failed',
+      });
+    }
   };
 
   const handleDownloadFromSearch = (result: SearchResult, format: string, quality: string) => {
-    simulateDownload(result.url, format, quality, result.title);
+    handleDownload(result.url, format, quality, result.title);
   };
 
   const handleRetry = (id: string) => {
     const download = downloads.find(d => d.id === id);
     if (download) {
-      updateDownload(id, { status: 'pending', progress: 0, downloadUrl: undefined });
-      simulateDownload(download.url, download.format, download.quality, download.title);
+      updateDownload(id, { 
+        status: 'pending', 
+        progress: 0, 
+        downloadUrl: undefined,
+        error: undefined 
+      });
+      handleDownload(download.url, download.format, download.quality, download.title);
     }
+  };
+
+  const handleCancelDownload = (id: string) => {
+    updateDownload(id, { status: 'cancelled' });
+    // In a real implementation, you would also cancel the actual download
   };
 
   return (
@@ -147,6 +149,7 @@ function App() {
                 onRemove={removeDownload}
                 onClearAll={clearHistory}
                 onRetry={handleRetry}
+                onCancel={handleCancelDownload}
               />
             </div>
           </div>
