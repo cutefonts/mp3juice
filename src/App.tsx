@@ -12,7 +12,7 @@ function App() {
   const { downloads, addDownload, updateDownload, removeDownload, clearHistory } = useDownloads();
   const [activeTab, setActiveTab] = useState<'download' | 'search'>('download');
 
-  const simulateDownload = (url: string, format: string, quality: string, title?: string) => {
+  const simulateDownload = async (url: string, format: string, quality: string, title?: string) => {
     const cleanTitle = title || `Downloaded Media - ${format.toUpperCase()}`;
     const filename = sanitizeFilename(cleanTitle) + getFileExtension(format);
     
@@ -30,26 +30,35 @@ function App() {
 
     // Simulate download progress
     let progress = 0;
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       progress += Math.random() * 15;
       if (progress >= 100) {
         progress = 100;
         
-        // Generate the actual downloadable file based on format
-        let downloadUrl: string;
-        if (format === 'mp3') {
-          downloadUrl = generateSampleAudioFile(cleanTitle, '3:45');
-        } else if (format === 'webm') {
-          downloadUrl = generateSampleWebMFile(cleanTitle, '3:45', quality);
-        } else {
-          downloadUrl = generateSampleVideoFile(cleanTitle, '3:45', quality);
+        try {
+          // Generate the actual downloadable file based on format
+          let downloadUrl: string;
+          if (format === 'mp3') {
+            downloadUrl = generateSampleAudioFile(cleanTitle, '3:45');
+          } else if (format === 'webm') {
+            downloadUrl = await generateSampleWebMFile(cleanTitle, '3:45', quality);
+          } else {
+            downloadUrl = await generateSampleVideoFile(cleanTitle, '3:45', quality);
+          }
+          
+          updateDownload(downloadId, { 
+            status: 'completed', 
+            progress: 100,
+            downloadUrl 
+          });
+        } catch (error) {
+          console.error('Error generating file:', error);
+          updateDownload(downloadId, { 
+            status: 'error', 
+            progress: 0 
+          });
         }
         
-        updateDownload(downloadId, { 
-          status: 'completed', 
-          progress: 100,
-          downloadUrl 
-        });
         clearInterval(interval);
       } else {
         updateDownload(downloadId, { 

@@ -8,8 +8,8 @@ interface DownloadFormProps {
 }
 
 const formatOptions: FormatOption[] = [
-  { value: 'mp3', label: 'MP3 Audio', icon: '🎵' },
-  { value: 'mp4', label: 'MP4 Video', icon: '🎬' },
+  { value: 'mp3', label: 'WAV Audio', icon: '🎵' },
+  { value: 'mp4', label: 'WebM Video', icon: '🎬' },
   { value: 'webm', label: 'WebM Video', icon: '📹' },
 ];
 
@@ -78,6 +78,9 @@ const DownloadForm: React.FC<DownloadFormProps> = ({ onDownload }) => {
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-white mb-2">Download Media</h2>
         <p className="text-gray-300">Paste your video or audio URL below</p>
+        <p className="text-sm text-yellow-300 mt-2">
+          Note: This demo generates sample playable files (WAV audio, WebM video)
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
