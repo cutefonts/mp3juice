@@ -242,21 +242,21 @@ const DownloadForm: React.FC<DownloadFormProps> = ({ onDownload }) => {
         <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
-            onClick={() => setUrl('https://youtube.com/watch?v=dQw4w9WgXcQ')}
+            onClick={() => handleUrlChange('https://youtube.com/watch?v=dQw4w9WgXcQ')}
             className="bg-white/5 hover:bg-white/10 border border-white/20 rounded-lg p-4 text-left transition-colors"
           >
             <div className="text-white font-medium mb-1">Demo Video</div>
             <div className="text-gray-400 text-sm">Try with sample YouTube URL</div>
           </button>
           <button
-            onClick={() => setUrl('https://soundcloud.com/artist/track')}
+            onClick={() => handleUrlChange('https://soundcloud.com/artist/track')}
             className="bg-white/5 hover:bg-white/10 border border-white/20 rounded-lg p-4 text-left transition-colors"
           >
             <div className="text-white font-medium mb-1">Demo Audio</div>
             <div className="text-gray-400 text-sm">Try with sample SoundCloud URL</div>
           </button>
           <button
-            onClick={() => setUrl('https://vimeo.com/123456789')}
+            onClick={() => handleUrlChange('https://vimeo.com/123456789')}
             className="bg-white/5 hover:bg-white/10 border border-white/20 rounded-lg p-4 text-left transition-colors"
           >
             <div className="text-white font-medium mb-1">Demo Vimeo</div>

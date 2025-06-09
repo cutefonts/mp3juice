@@ -29,7 +29,7 @@ class DownloadService {
       const videoId = this.extractVideoId(url);
       
       return {
-        title: `Video Title - ${videoId}`,
+        title: `Demo Video - ${videoId}`,
         duration: '3:45',
         thumbnail: 'https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=400',
         formats: [
@@ -67,6 +67,7 @@ class DownloadService {
       const chunkSize = Math.max(1024 * 100, totalSize / 100); // 100KB chunks or 1% of file
       
       const chunks: Uint8Array[] = [];
+      const startTime = Date.now();
       
       while (downloadedBytes < totalSize && !controller.signal.aborted) {
         const currentChunkSize = Math.min(chunkSize, totalSize - downloadedBytes);
@@ -75,7 +76,7 @@ class DownloadService {
         
         downloadedBytes += currentChunkSize;
         const progress = (downloadedBytes / totalSize) * 100;
-        const speed = this.calculateSpeed(downloadedBytes);
+        const speed = this.calculateSpeed(downloadedBytes, startTime);
         
         onProgress({
           progress,
@@ -156,12 +157,12 @@ class DownloadService {
     const chunk = new Uint8Array(size);
     
     if (format === 'mp3') {
-      // Generate audio-like data
+      // Generate audio-like data with sine wave pattern
       for (let i = 0; i < size; i++) {
         chunk[i] = Math.floor(Math.sin(i * 0.01) * 127 + 128);
       }
     } else {
-      // Generate video-like data
+      // Generate video-like data with pattern
       for (let i = 0; i < size; i++) {
         chunk[i] = Math.floor(Math.random() * 256);
       }
@@ -170,13 +171,16 @@ class DownloadService {
     return chunk;
   }
 
-  private calculateSpeed(downloadedBytes: number): string {
-    // Simple speed calculation (this would be more sophisticated in real implementation)
-    const speed = downloadedBytes / 1024; // KB/s (simplified)
-    if (speed > 1024) {
-      return `${(speed / 1024).toFixed(1)} MB/s`;
+  private calculateSpeed(downloadedBytes: number, startTime: number): string {
+    const elapsedTime = (Date.now() - startTime) / 1000; // seconds
+    const speed = downloadedBytes / elapsedTime; // bytes per second
+    
+    if (speed > 1024 * 1024) {
+      return `${(speed / (1024 * 1024)).toFixed(1)} MB/s`;
+    } else if (speed > 1024) {
+      return `${(speed / 1024).toFixed(1)} KB/s`;
     }
-    return `${speed.toFixed(0)} KB/s`;
+    return `${speed.toFixed(0)} B/s`;
   }
 
   private createMediaBlob(chunks: Uint8Array[], format: string, title: string, duration: string): Blob {
@@ -223,9 +227,17 @@ class DownloadService {
   }
 
   private createVideoBlob(chunks: Uint8Array[], title: string, duration: string): Blob {
-    // For video, we'll create a simple WebM container
-    // In a real implementation, this would be much more complex
-    return new Blob(chunks, { type: 'video/webm' });
+    // Create a simple WebM container with basic structure
+    const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+    
+    // Simple WebM header (minimal structure)
+    const header = new Uint8Array([
+      0x1A, 0x45, 0xDF, 0xA3, // EBML header
+      0x9F, 0x42, 0x86, 0x81, 0x01, // DocType: webm
+      0x42, 0x82, 0x84, 0x77, 0x65, 0x62, 0x6D, // webm
+    ]);
+    
+    return new Blob([header, ...chunks], { type: 'video/webm' });
   }
 }
 

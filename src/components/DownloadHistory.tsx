@@ -1,7 +1,6 @@
 import React from 'react';
-import { Download, Trash2, Clock, FileText, Video, Music, ExternalLink, RefreshCw, Save, X, Pause, Play } from 'lucide-react';
+import { Download, Trash2, Clock, FileText, Video, Music, ExternalLink, RefreshCw, Save, X } from 'lucide-react';
 import { DownloadItem } from '../types';
-import { formatFileSize } from '../utils/validators';
 
 interface DownloadHistoryProps {
   downloads: DownloadItem[];
@@ -91,12 +90,14 @@ const DownloadHistory: React.FC<DownloadHistoryProps> = ({
         <h3 className="text-xl font-bold text-white">Download History</h3>
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-400">{downloads.length} items</span>
-          <button
-            onClick={onClearAll}
-            className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
-          >
-            Clear All
-          </button>
+          {downloads.length > 0 && (
+            <button
+              onClick={onClearAll}
+              className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
+            >
+              Clear All
+            </button>
+          )}
         </div>
       </div>
 
@@ -129,7 +130,7 @@ const DownloadHistory: React.FC<DownloadHistoryProps> = ({
                     {getFormatIcon(download.format)}
                     <span>{download.format.toUpperCase()}</span>
                   </span>
-                  <span>{download.quality}p</span>
+                  <span>{download.quality}</span>
                   {getProgressText(download) && (
                     <span>{getProgressText(download)}</span>
                   )}
