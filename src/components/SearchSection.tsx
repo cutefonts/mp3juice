@@ -170,9 +170,9 @@ const SearchSection: React.FC<SearchSectionProps> = ({ onDownloadFromSearch }) =
                   className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="all">Any Duration</option>
-                  <option value="short">Short (< 4 min)</option>
+                  <option value="short">{'Short (< 4 min)'}</option>
                   <option value="medium">Medium (4-20 min)</option>
-                  <option value="long">Long (> 20 min)</option>
+                  <option value="long">{'Long (> 20 min)'}</option>
                 </select>
               </div>
 
